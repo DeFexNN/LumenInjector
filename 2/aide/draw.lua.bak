@@ -1,0 +1,214 @@
+
+local x,y,w,h,m,hp,--x y 人物宽度 人物高度 敌人距离 敌人血量
+ai,zy,dx,name--人机判断 人物动作 敌人队营 倒地血量 敌人名字
+
+local hp_list={}
+local num_list={}
+
+local _fps,idx,id1,id2,_hp,t,__hp,
+队伍颜色_0xff,队伍颜色_0xef,队伍颜色_0xaf_0_0x1,队伍颜色_0xef_0z1_0x1,
+y_w,y__w,w_2,_,
+
+mDraw=LimoDrawable{--创建LuaDrawable对象
+  view=window,--设置图层控件
+  data=Split_Table,
+  调试模式=false,--分析错误日志并给出部分异常的解决方案 (发布前请关闭，否则将会影响帧率)
+  onDraw=function(view,画布,画笔,self,fps,data)--控件对象 画布 画笔 LuaDrawable对象 获取FPS 内部数据表
+    if 绘制开关--控制是否绘制图形
+      _fps,_time=fps()
+      if _fps>=50
+        setColor("FPS画笔",0xFFFFFFFF)
+       elseif _fps<30
+        setColor("FPS画笔",0xFFFFFFFF)
+       else
+        setColor("FPS画笔",0xFFFFFFFF)
+      end
+
+      画布.drawText(tostring(_fps),100,126,FPS画笔)--绘制FPS
+      画布.drawText("FPS",100,100,FPS画笔)--绘制FPS
+
+ 
+
+      id1,id2=0,0--申明用于计算敌人数量的局部变量
+      瞄准=0--同级当前瞄准敌人的数量，用于显示名字
+      for str io.lines "/sdcard/a.log"--读取b.log的每一行
+        string.split(str,",")--将分割后的字符串存入data
+        x,y,w,h,m,hp,--x y 人物宽度 人物高度 敌人距离 敌人血量
+        ai,zy,dx,name=--人机判断 敌人队营 倒地血量 敌人名字
+        tonumber(data[1]),tonumber(data[2]),
+        tonumber(data[3]),tonumber(data[4]),
+        tointeger(data[5]),tonumber(data[6]),
+        tonumber(data[7]),tonumber(data[8]),
+        tonumber(data[9]),data[10]
+
+        if x and y and w and h and m--因数据不是数字，tonumber返回nil
+          and hp and ai and zy and dx and name--所以可以通过判断变量是否存在，过滤异常数据
+          y_w,y__w,w_2=y-w,y+w,w/2--缓存需要重复运算的数据
+                    if ai==0 or zy==996--人机判断，适配了地铁模式
+            id2=id2+1--人机+1
+           else--真人
+            id1=id1+1--真人+1
+          end
+
+          if w>0--过滤掉背后的敌人
+            x=x+(w_2)--[[身位偏移
+            x坐标是以人物左侧为基准,而我以中间为基准计算的
+            所以需要在这里将坐标矫正，向右挪移半个身位]]
+            if ai==0--人机判断，适配了地铁模式
+              if 绘制背敌 ==true then
+                setColor("背敌画笔1",0xFFFFFFFF)
+                setColor("背敌画笔2",0xFFFFFFFF)
+                setColor("背敌文字",0xFF000000)
+              end
+              if 绘制方框 ==true then
+                if y>height_2-w and y<height_2+w and x>width_2-w_2 and x<width_2+w_2--判断是否被瞄准
+                  瞄准=true
+                 else
+                  setColor("方框画笔",0xFFFFFFFF)
+                  瞄准=false
+                end
+              end
+             else--真人
+              if 绘制背敌 ==true then
+                setColor("背敌画笔1",0xFFFFFFFF)
+                setColor("背敌画笔2",0xFFFFFFFF)
+                setColor("背敌文字",0xFF000000)
+              end
+              if 绘制方框 ==true then
+                if y>height_2-w and y<height_2+w and x>width_2-w_2 and x<width_2+w_2--判断是否被瞄准
+                  瞄准=true
+                 else
+                  setColor("方框画笔",0xFFFFFFFF)
+                  瞄准=false
+                end
+              end
+            end
+
+            if x+(w_2)<0--左侧背敌
+              if 绘制背敌
+                画布.drawRect(0,y-25,90,y+25,背敌画笔1)--背敌填充
+                画布.drawRect(-1,y-25-1,91,y+25+1,背敌画笔2)--背敌边框
+                画布.drawText(m.."m",45,y+8,背敌文字)--背敌文字
+              end
+             elseif x-(w_2)>width--右侧背敌
+              if 绘制背敌 == false then
+                画布.drawRect(width,y-25,width-90,y+25,背敌画笔1)
+                画布.drawRect(width+1,y-25-1,width-91,y+25+1,背敌画笔2)
+                画布.drawText(m.."m",width-45,y+8,背敌文字)
+              end
+             elseif y__w<0--上方背敌
+              if 绘制背敌 == false then
+                画布.drawRect(x-45,0,x+45,50,背敌画笔1)
+                画布.drawRect(x-45-1,-1,x+45+1,51,背敌画笔2)
+                画布.drawText(m.."m",x,35,背敌文字)
+              end
+             else--敌人方框
+
+              if 绘制方框 ==true then
+                if 瞄准
+                  画布.drawRect(x-(w_2)+X轴纠正,y_w,x+(w_2)+X轴纠正,y__w,瞄准画笔)--绘制方框
+                  画布.drawRect(x-(w_2)+X轴纠正,y_w,x+(w_2)+X轴纠正,y__w,背景填充)
+                 else
+                  画布.drawRect(x-(w_2)+X轴纠正,y_w,x+(w_2)+X轴纠正,y__w,方框画笔)--绘制方框
+                  画布.drawRect(x-(w_2)+X轴纠正,y_w,x+(w_2)+X轴纠正,y__w,背景填充)
+                end
+              end
+
+
+              if 绘制信息 ==true then
+                if ai==0--人机判断，适配了地铁模式
+                  setColor("信息画笔",0xFFFFFFFF)
+                  setColor("信息画笔2",0xFFFFFFFF)
+                 else
+                  setColor("信息画笔",0xFFFFFFFF)
+                  setColor("信息画笔2",0xFFFFFFFF)
+                end
+
+
+                画布.drawText("["..zy.."]",x-30+X轴纠正,y-w-7,阵营画笔)--绘制队营文字
+                画布.drawText("["..m.."m]",x+60+X轴纠正,y_w-7,距离画笔)--绘制距离文字
+                画布.drawText(name,x+10+X轴纠正,y_w-25,名字画笔)--绘制人物名字
+                画布.drawRect(x+3+w/2+X轴纠正,y+w-((y+w)-(y-w))*hp/100,x+1+w/2+w*2*7/100+X轴纠正,y+w,血条画笔2)
+                画布.drawText(""..hp.."/"..dx.."HP",x-50+X轴纠正,y+w+20,血条画笔3)--文字血量
+
+                if 绘制射线 ==true then
+                  画布.drawLine(width_2,104,x+X轴纠正,y_w-68,射线画笔)--绘制射线
+                end
+               else
+                if 绘制射线 ==true then
+                  画布.drawLine(width_2,104,x+X轴纠正,y_w-26,射线画笔)--绘制射线
+                end
+              end
+
+            end
+           else--后方背敌
+            if 绘制背敌 ==true then
+              if ai==0--人机判断，适配了地铁模式
+                setColor("背敌画笔1",0xFFFFFFFF)
+                setColor("背敌画笔2",0xFFFFFFFF)
+                setColor("背敌文字",0xFF000000)
+               else--真人
+                setColor("背敌画笔1",0xFFFFFFFF)
+                setColor("背敌画笔2",0xFFFFFFFF)
+                setColor("背敌文字",0xFF000000)
+              end
+              画布.drawRect(x-45,height,x+45,height-50,背敌画笔1)
+              画布.drawRect(x-45-1,height-1,x+45+1,height-51,背敌画笔2)
+              画布.drawText(m.."m",x,height-20,背敌文字)
+            end
+          end
+        end
+        --table.clear(data)--清空data，如要开启调试模式，建议取消注释
+      end
+
+
+      if 击伤开关 and t--击伤特效
+        for i=#num_list,1,-1
+          local _=num_list
+          local t=num_list[i]
+          if t
+            if t[3] and _time-t[2]<=1000
+              setColor("伤害画笔1",t[4])
+              伤害画笔1.setAlpha((255/1000)*(1000-(_time-t[2])))
+              伤害画笔2.setAlpha((255/1000)*(1000-(_time-t[2])))
+              画布.drawText(t[3],t[6],t[7]-35-((100/1000)*(_time-t[2])),伤害画笔1)
+              画布.drawText(t[3],t[6],t[7]-35-((100/1000)*(_time-t[2])),伤害画笔2)
+             else
+              _[i]=nil
+            end
+          end
+        end
+      end
+      a=id1==0
+      b=id2==0
+      if a
+        setColor("人数画笔1",0xffc0cb)
+
+        画布.drawRect((width_2)-0,0,(width_2)+0,0,人数画笔1)--绘制人数的背景
+        画布.drawText("safe",width_2,87.5,人数画笔2)
+       else
+        if a
+          setColor("人数画笔1",0xff0000)
+          画布.drawRect((width_2)-120,55,(width_2)+120,100,人数画笔1)--绘制人数的背景
+          画布.drawText("players: 0",width_2-60,87.5,人数画笔2)
+         else
+          setColor("人数画笔1",0x00000000)--0xfFF36500
+          画布.drawRect((width_2)-120,55,(width_2)+120,100,人数画笔1)--绘制人数的背景
+          画布.drawText("players: "..id1,width_2,87.5,人数画笔2)
+        end
+        --[[if b
+          setColor("人数画笔1",0xfF07BE2E)
+          画布.drawRect((width_2)+115,55,width_2,100,人数画笔1)--绘制人数的背景
+          画布.drawText("人机: 0",width_2+60,87.5,人数画笔2)
+         else
+          setColor("人数画笔1",0xfF07BE2E)
+          画布.drawRect((width_2)+115,55,width_2,100,人数画笔1)--绘制人数的背景
+          画布.drawText("人机: "..id2,width_2+60,87.5,人数画笔2)
+        end]]
+      end
+ 
+    end
+  end
+}
+
+
